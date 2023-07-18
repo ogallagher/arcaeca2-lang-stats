@@ -1,0 +1,23 @@
+{
+  "name": "arcaeca2",
+  "version": "0.1.0",
+  "description": "Scripts for analyzing constructed languages.",
+  "main": "main.js",
+  "type": "module",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha test"
+  },
+  "keywords": [
+    "conlang",
+    "javascript"
+  ],
+  "author": "arcaeca2, ogallagher",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/mocha": "^10.0.1",
+    "mocha": "^10.2.0"
+  }
+}
