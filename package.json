@@ -17,6 +17,7 @@
   "author": "arcaeca2, ogallagher",
   "license": "ISC",
   "devDependencies": {
+    "@types/assert": "^1.5.6",
     "@types/mocha": "^10.0.1",
     "mocha": "^10.2.0"
   }

@@ -12,7 +12,10 @@ import {
     afterEach
 } from 'mocha'
 
-import FindHoles from '../FindHoles.js'
+import {
+    FindHoles,
+    multiply
+} from '../FindHoles.js'
 
 // example from [mocha](https://mochajs.org/) docs
 describe('Array', function() {
@@ -46,12 +49,42 @@ describe('FindHoles', function() {
     })
 
     describe('#multiply', function() {
-        it('returns empty list when both args are empty')
+        it('returns empty list when both args are empty', function() {
+            let res = multiply([], [])
+            assert.strictEqual(res.length, 0)
+        })
 
-        it('returns sequences unchanged if phonemes are empty')
+        it('returns sequences unchanged if phonemes are empty', function() {
+            let sequences = [
+                ['a1', 'b1'],
+                ['a2', 'b2']
+            ]
+            let res = multiply(sequences, [])
+            assert.strictEqual(sequences, res)
+        })
 
-        it('returns phonemes if input sequences are empty')
+        it('returns phonemes if input sequences are empty', function() {
+            let res = multiply([], categories['A'])
+            assert.strictEqual(res, categories['A'])
+        })
 
-        it('returns every ')
+        it('returns every possible proceeding phoneme for the given category for each sequence', function() {
+            let sequences = [
+                ['11', '12', '13'],
+                ['21', '22', '23']
+            ]
+            let res = multiply(sequences, categories['B'])
+
+            assert.strictEqual(
+                res.length, 
+                sequences.length * categories['B'].length, 
+                'res.length is not equal to the number of input sequences * number of B phonemes'
+            )
+            assert.strictEqual(
+                res[0].join(','), 
+                sequences[0].concat(categories['B'][0]).join(','), 
+                `the first phoneme in the first output sequence ${res[0]} is not as expected ${sequences[0].concat(categories['B'][0])}`
+            )
+        })
     })
 })

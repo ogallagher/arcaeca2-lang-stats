@@ -68,7 +68,7 @@ function OStats(sPattern) {
 }
 
 // given some pattern ABC, find combinations of ABC that don't appear in the lexicon, even though AB and BC individually do
-export default function FindHoles(sPattern) {
+export function FindHoles(sPattern) {
 	let tPattern = Stats(sPattern) // results for search on "ABC"
 	let tTop = Stats(sPattern.substring(0,2)) // results for search on "AB"
 	let tBottom = Stats(sPattern.substring(1)) // results for search on "BC"
@@ -89,6 +89,7 @@ export default function FindHoles(sPattern) {
 	
 	return tOut
 }
+export default FindHoles
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -114,7 +115,7 @@ function categoryValueToString(array = []) {
  * @param {string[]} phonemes Set of possible char combos/phonemes that fall into the current category.
  * @returns {string[][]} List of modified sequences, or empty list.
  */
-function multiply(sequences, phonemes) {
+export function multiply(sequences, phonemes) {
   if (sequences.length === 0 && phonemes.length === 0) {
     return []
   }
