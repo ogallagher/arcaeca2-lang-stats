@@ -220,13 +220,19 @@ function split(inputString) {
   return output
 }
 
-function stringHasCategories(inputString) {
-  for (const key of Object.keys(tCategories)) {
-    if (inputString.includes(key)) {
-      return true
+/**
+ * 
+ * @param {string} inputString 
+ * @returns {boolean} Whether any phoneme categories are present in the string.
+ */
+export function stringHasCategories(inputString, customCategories) {
+    const categories = customCategories !== undefined ? customCategories : tCategories
+    for (const key of Object.keys(categories)) {
+        if (inputString.includes(key)) {
+            return true
+        }
     }
-  }
-  return false
+    return false
 }
                
 /**
@@ -234,7 +240,7 @@ function stringHasCategories(inputString) {
  * @param {string} inputString 
  * @returns {string[]}
  */
-function expandCategories(inputString) {
+export function expandCategories(inputString) {
     if (!stringHasCategories(inputString)) {
         return inputString
     }

@@ -14,7 +14,9 @@ import {
 
 import {
     FindHoles,
-    multiply
+    multiply,
+    expandCategories,
+    stringHasCategories
 } from '../FindHoles.js'
 
 // example from [mocha](https://mochajs.org/) docs
@@ -80,11 +82,41 @@ describe('FindHoles', function() {
                 sequences.length * categories['B'].length, 
                 'res.length is not equal to the number of input sequences * number of B phonemes'
             )
-            assert.strictEqual(
-                res[0].join(','), 
-                sequences[0].concat(categories['B'][0]).join(','), 
+            assert.deepStrictEqual(
+                res[0], 
+                sequences[0].concat(categories['B'][0]), 
                 `the first phoneme in the first output sequence ${res[0]} is not as expected ${sequences[0].concat(categories['B'][0])}`
             )
         })
     })
+
+    describe('#stringHasCategories', function() {
+        it('handles true positive', function() {
+            // complete
+            assert.strictEqual(
+                stringHasCategories('ABBA', categories),
+                true,
+                `failed to find categories ${Object.keys(categories)} in ABBA`
+            )
+            // partial
+            assert.strictEqual(
+                stringHasCategories('abBa', categories),
+                true,
+                `failed to find categories ${Object.keys(categories)} in abBa`
+            )
+        })
+
+        it('handles true negative', function() {
+            assert.strictEqual(
+                stringHasCategories('ab', categories),
+                false
+            )
+        })
+    })
+
+    describe.skip('#expandCategories', function() {
+
+    })
+
+    
 })
