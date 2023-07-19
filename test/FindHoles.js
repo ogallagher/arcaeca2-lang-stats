@@ -111,12 +111,48 @@ describe('FindHoles', function() {
                 stringHasCategories('ab', categories),
                 false
             )
+
+            assert.strictEqual(
+                stringHasCategories('', categories),
+                false
+            )
         })
     })
 
-    describe.skip('#expandCategories', function() {
+    describe('#expandCategories', function() {
+        it('correctly modifies a list of sequence lists', function() {
+            let sequences = [
+                ['a', 'b'],
+                ['c', 'd']
+            ]
+            
+            // confirming forEach used this way works as expected
+            sequences.forEach((op, i) => { sequences[i] = op.join('') })
+            assert.deepStrictEqual(
+                sequences,
+                ['ab', 'cd']
+            )
+        })
 
+        it('handles trivial patterns', function() {
+            assert.deepStrictEqual(
+                expandCategories('bad', categories),
+                ['bad'],
+                `string bad with no categories ${Object.keys(categories)} should be itself`
+            )
+
+            assert.deepStrictEqual(
+                expandCategories('', categories),
+                ['']
+            )
+        })
+
+        it('handles non trivial patterns', function() {
+            let sequences = expandCategories('AB', categories)
+            assert.strictEqual(
+                sequences.length, 
+                categories['A'].length * categories['B'].length
+            )
+        })
     })
-
-    
 })

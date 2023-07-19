@@ -4,9 +4,12 @@
 
 import { readFileSync } from 'node:fs'
 
+/**
+ * Default phoneme categories, where a phoneme is a collection of characters that are considered 1 unit of sound.
+ */
 const tCategories = {
-	"C": "b,d,dz,g,ġ,gh,h,j,k,k',kh,l,m,n,p,p',q,q',r,s,ş,t,t',ts,ts',tş,tş',v,z".split(","),
-	"V": "a,ạ,e,i,o,u".split(",")
+	'C': "b,d,dz,g,ġ,gh,h,j,k,k',kh,l,m,n,p,p',q,q',r,s,ş,t,t',ts,ts',tş,tş',v,z".split(','),
+	'V': "a,ạ,e,i,o,u".split(',')
 }
 
 ///////////////////////////////////////////////////////////
@@ -15,7 +18,7 @@ const tCategories = {
 var sWords = readFileSync('resources/old_mtsqrveli_lexicon.txt', 'utf-8')
 console.log(`first 100 chars of mtsqrveli raw lexicon = ${sWords.substring(0, 100)}`)
 
-var tWords = sWords.split(" ")
+var tWords = sWords.split(' ')
 console.log(`first 10 words = ${tWords.slice(0, 10)}`)
 
 // returns a dictionary sorted by value in descending order
@@ -221,9 +224,11 @@ function split(inputString) {
 }
 
 /**
+ * Whether the given string contains any chars that are category codes.
  * 
- * @param {string} inputString 
- * @returns {boolean} Whether any phoneme categories are present in the string.
+ * @param {string} inputString A string expected to be a sequence of phoneme category codes.
+ * @param {string} customCategories Optional custom phoneme category codes.
+ * @returns {boolean} Whether any phoneme categories are present in the string. If the string is empty, return `false`.
  */
 export function stringHasCategories(inputString, customCategories) {
     const categories = customCategories !== undefined ? customCategories : tCategories
@@ -236,20 +241,25 @@ export function stringHasCategories(inputString, customCategories) {
 }
                
 /**
+ * Generate list of possible strings following the given pattern (sequence of categories).
  * 
- * @param {string} inputString 
- * @returns {string[]}
+ * @param {string} inputString Sequence of phoneme category codes.
+ * @param {string} customCategories Optional custom phoneme category codes.
+ * @returns {string[]} List of possible phoneme sequences matching the given pattern of categories.
  */
-export function expandCategories(inputString) {
-    if (!stringHasCategories(inputString)) {
-        return inputString
+export function expandCategories(inputString, customCategories) {
+    if (!stringHasCategories(inputString, customCategories)) {
+      // nest in list for consistency
+      return [inputString]
     }
 
+    const categories = customCategories !== undefined ? customCategories : tCategories
     let output = [[]]
+    // TODO this method currently overwrites the output list for every subsequent code from the pattern
     for (let i = 0, ch = inputString.charAt(0); i < inputString.length; i++, ch = inputString.charAt(i)) {
         // input char is a category
-        if (tCategories[ch]) {
-            output = multiply(output, tCategories[ch])
+        if (categories[ch] !== undefined) {
+            output = multiply(output, categories[ch])
         }
         // input char is anything else
         else {
@@ -258,6 +268,7 @@ export function expandCategories(inputString) {
         }
     }
 
-    output.forEach((op, i) => { output[i] = op.join(''); })
+    // replace each phoneme list with joined string
+    output.forEach((op, i) => { output[i] = op.join('') })
     return output
 }
