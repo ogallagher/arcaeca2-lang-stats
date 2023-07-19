@@ -167,10 +167,10 @@ describe('FindHoles', function() {
         })
     })
 
-    describe('lexicon analysis', function() {
-        let lexicon = 'a1 b1 a1a2b1 a1a3b3 a1b1b2b3 a2a2'
+    describe.only('lexicon analysis', function() {
+        let lexicon = 'a1 b1 a1a2b1 a1a3b3 a1b1b2b1 a2a2'
 
-        describe.only('Stats', function() {
+        describe('Stats', function() {
             let expected_stats = [
                 {
                     a1: 4,
@@ -178,7 +178,7 @@ describe('FindHoles', function() {
                     a3: 1
                 },
                 {
-                    b1: 3,
+                    b1: 4,
                     b2: 1
                 },
                 {
@@ -221,6 +221,26 @@ describe('FindHoles', function() {
 
                 i++
             }
+        })
+
+        describe('FindHoles', function() {
+            it('finds a hole when pattern not found', function() {
+                let pattern = 'AAA'
+                console.log(Stats(pattern, lexicon, categories))
+
+                let res = FindHoles(pattern, lexicon, categories)
+                console.log(res)
+                assert.ok(res.length > 0)
+            })
+
+            it('does not find a hole when pattern present', function() {
+                let pattern = 'BBB'
+                console.log(Stats(pattern, lexicon, categories))
+
+                let res = FindHoles(pattern, lexicon, categories)
+                console.log(res)
+                assert.strictEqual(res.length, 0)
+            })
         })
     })
 })

@@ -45,8 +45,8 @@ function sort_object(obj) {
  * Find matches of a given pattern within a text (set of words).
  * 
  * @param {string} sPattern String sequence of category codes.
- * @param {string} words Optional custom lexicon (word set).
- * @param {Object} categories Optional custom set of categories.
+ * @param {string?} words Optional custom lexicon (word set).
+ * @param {Object?} categories Optional custom set of categories.
  * @returns {Object} The number of matches in the lexicon of each segment that matches sPattern.
  */
 export function Stats(sPattern, words, categories) {
@@ -81,21 +81,26 @@ export function Stats(sPattern, words, categories) {
 	return tOut
 }
 
-// the same as above, except sorted by value in descending order
-function OStats(sPattern) {
-	let tOStats = sort_object(Stats(sPattern))
+/**
+ * Same as {@link Stats}, but with result keys reverse sorted.
+ * @param {string} sPattern 
+ * @param {string?} words
+ * @param {Object?} categories
+ */
+function OStats(sPattern, words, categories) {
+	let tOStats = sort_object(Stats(sPattern, words, categories))
 	let str = '{\n' + Object.getOwnPropertyNames(tOStats).map(key => `  ${key}: ${tOStats[key]}`).join('\n') + '\n}'
 	console.log(str)
 }
 
 // given some pattern ABC, find combinations of ABC that don't appear in the lexicon, even though AB and BC individually do
-export function FindHoles(sPattern) {
-	let tPattern = Stats(sPattern) // results for search on "ABC"
-	let tTop = Stats(sPattern.substring(0,2)) // results for search on "AB"
-	let tBottom = Stats(sPattern.substring(1)) // results for search on "BC"
+export function FindHoles(sPattern, words, categories) {
+	let tPattern = Stats(sPattern, words, categories) // results for search on "ABC"
+	let tTop = Stats(sPattern.substring(0,2), words, categories) // results for search on "AB"
+	let tBottom = Stats(sPattern.substring(1), words, categories) // results for search on "BC"
 	
 	let tOut = []
-	
+  
 	for (let sKey in tPattern) { // for each "ABC" we tallied up the results for,
 		let sTop = sKey.substring(0,2) // the corresponding "AB"
 		let sBottom = sKey.substring(1) // the corresponding "BC"
@@ -105,7 +110,6 @@ export function FindHoles(sPattern) {
 			// I'm not really sure what a good metric would be for deciding if a combination "occurs" or not
 			tOut.push(sKey)
 		}
-		
 	}
 	
 	return tOut
