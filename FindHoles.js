@@ -14,12 +14,13 @@ const tCategories = {
 
 ///////////////////////////////////////////////////////////
 
-// the entire lexicon of Old Mtsqrveli compressed into one, space-delimited line
+/**
+ * Default space word set/text.
+ * 
+ * The entire lexicon of Old Mtsqrveli compressed into one, space-delimited line.
+ */
 var sWords = readFileSync('resources/old_mtsqrveli_lexicon.txt', 'utf-8')
 console.log(`first 100 chars of mtsqrveli raw lexicon = ${sWords.substring(0, 100)}`)
-
-var tWords = sWords.split(' ')
-console.log(`first 10 words = ${tWords.slice(0, 10)}`)
 
 // returns a dictionary sorted by value in descending order
 // (otherwise by default dictionaries are unordered, but will display by keys in alphabetical order)
@@ -40,11 +41,23 @@ function sort_object(obj) {
     return(sorted_obj)
 } 
 
-// returns the number of matches in the lexicon of each segment that matches sPattern
-function Stats(sPattern) {
-	let tCombos = expandCategories(sPattern)  // get all combinations that fit the pattern
-	                                          // e.g. if sPattern = "tV", then this returns
-											  // ["ta","tạ","te","ti","to","tu"]
+/**
+ * Find matches of a given pattern within a text (set of words).
+ * 
+ * @param {string} sPattern String sequence of category codes.
+ * @param {string} words Optional custom lexicon (word set).
+ * @param {Object} categories Optional custom set of categories.
+ * @returns {Object} The number of matches in the lexicon of each segment that matches sPattern.
+ */
+export function Stats(sPattern, words, categories) {
+  words = words !== undefined ? words : sWords
+  categories = categories !== undefined ? categories : tCategories
+
+  // get all combinations that fit the pattern
+  // e.g. if sPattern = "tV", then this returns
+  // ["ta","tạ","te","ti","to","tu"]
+	let tCombos = expandCategories(sPattern, categories)
+
 	let tOut = {}
 	for (let i = 0; i < tCombos.length; i++) {
 		tOut[tCombos[i]] = 0
@@ -54,10 +67,15 @@ function Stats(sPattern) {
 	// (* since some of the consonants are digraphs, e.g. "gh", and regexes match the first thing they can,
 	//    if we don't force it to try to match longer combinations first, it would never match e.g. "agh" -
 	//    that would always be counted as a match for "ag".)
-	let re = new RegExp(tCombos.sort(function(a,b) { return b.length - a.length }).join("|"), "g")
-    let result
+	let re = new RegExp(
+    tCombos.sort(function(a,b) { 
+      return b.length - a.length 
+    }).join('|'), 
+    'g'
+  )
+  let result
 
-	while (result = re.exec(sWords)) {
+	while (result = re.exec(words)) {
 		tOut[result[0]] = tOut[result[0]] + 1
 	}
 	return tOut
@@ -255,7 +273,7 @@ export function expandCategories(inputString, customCategories) {
 
     const categories = customCategories !== undefined ? customCategories : tCategories
     let output = [[]]
-    
+
     for (let i = 0, ch = inputString.charAt(0); i < inputString.length; i++, ch = inputString.charAt(i)) {
         // input char is a category
         if (categories[ch] !== undefined) {
