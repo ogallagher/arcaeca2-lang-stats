@@ -149,6 +149,8 @@ describe('FindHoles', function() {
 
         it('handles non trivial patterns', function() {
             let sequences = expandCategories('AB', categories)
+            console.log(sequences.join('\n'))
+            
             assert.strictEqual(
                 sequences.length, 
                 categories['A'].length * categories['B'].length

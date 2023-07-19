@@ -255,7 +255,7 @@ export function expandCategories(inputString, customCategories) {
 
     const categories = customCategories !== undefined ? customCategories : tCategories
     let output = [[]]
-    // TODO this method currently overwrites the output list for every subsequent code from the pattern
+    
     for (let i = 0, ch = inputString.charAt(0); i < inputString.length; i++, ch = inputString.charAt(i)) {
         // input char is a category
         if (categories[ch] !== undefined) {
