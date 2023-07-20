@@ -47,6 +47,7 @@ function sort_object(obj) {
  * @param {string} sPattern String sequence of category codes.
  * @param {string?} words Optional custom lexicon (word set).
  * @param {Object?} categories Optional custom set of categories.
+ * 
  * @returns {Object} The number of matches in the lexicon of each segment that matches sPattern.
  */
 export function Stats(sPattern, words, categories) {
@@ -54,13 +55,24 @@ export function Stats(sPattern, words, categories) {
   categories = categories !== undefined ? categories : tCategories
 
   // get all combinations that fit the pattern
-  // e.g. if sPattern = "tV", then this returns
-  // ["ta","tạ","te","ti","to","tu"]
 	let tCombos = expandCategories(sPattern, categories)
+
+  let tComboStrings = []
+  tCombos.forEach((phonemes) => {
+    tComboStrings.push(phonemes.join(''))
+  })
 
 	let tOut = {}
 	for (let i = 0; i < tCombos.length; i++) {
-		tOut[tCombos[i]] = 0
+    /**
+     * @type {Object.<string, {count: number, phonemes: string[][]}>}
+     */
+		tOut[tComboStrings[i]] = {
+      // value.count is number of occurrences
+      count: 0,
+      // value.phonemes is phoneme sequence
+      phonemes: tCombos[i]
+    }
 	}
 
 	// sort the combinations by descending length*, then smoosh into a regex
@@ -68,7 +80,7 @@ export function Stats(sPattern, words, categories) {
 	//    if we don't force it to try to match longer combinations first, it would never match e.g. "agh" -
 	//    that would always be counted as a match for "ag".)
 	let re = new RegExp(
-    tCombos.sort(function(a,b) { 
+    tComboStrings.sort(function(a,b) { 
       return b.length - a.length 
     }).join('|'), 
     'g'
@@ -76,7 +88,7 @@ export function Stats(sPattern, words, categories) {
   let result
 
 	while (result = re.exec(words)) {
-		tOut[result[0]] = tOut[result[0]] + 1
+		tOut[result[0]].count += 1
 	}
 	return tOut
 }
@@ -109,13 +121,20 @@ export function FindHoles(sPattern, words, categories) {
 	
 	let tOut = []
   
-	for (let sKey in tPattern) { // for each "ABC" we tallied up the results for,
-		let sTop = sKey.substring(0,2) // the corresponding "AB"
-		let sBottom = sKey.substring(1) // the corresponding "BC"
-    console.log(`whole start end:\t${sKey}\t${sTop}\t${sBottom}\t|\t${tPattern[sKey]}\t${tTop[sTop]}\t${tBottom[sBottom]}`)
+	for (let sKey in tPattern) { // for each ABC we tallied up the results for
+    let full = tPattern[sKey].phonemes
+		let start = full.slice(0,2) // the corresponding AB
+		let end = full.slice(1) // the corresponding BC
+    let startStr = start.join('')
+    let endStr = end.join('')
+    console.log(
+      `whole start end:`
+      + `\t${sKey}\t${startStr}\t${endStr}\t|`
+      + `\t${tPattern[sKey].count}\t${tTop[startStr].count}\t${tBottom[endStr].count}`
+    )
 		
 		// if "AB" occurs, and "BC" occurs, but "ABC" doesn't
-		if ( (tTop[sTop] >= 1) && (tBottom[sBottom] >= 1) && (tPattern[sKey] < 1) ) {
+		if ( (tTop[startStr].count >= 1) && (tBottom[endStr].count >= 1) && (tPattern[sKey].count < 1) ) {
 			// I'm not really sure what a good metric would be for deciding if a combination "occurs" or not
 			tOut.push(sKey)
 		}
@@ -274,14 +293,16 @@ export function stringHasCategories(inputString, customCategories) {
 /**
  * Generate list of possible strings following the given pattern (sequence of categories).
  * 
+ * // TODO handle new return type everywhere
+ * 
  * @param {string} inputString Sequence of phoneme category codes.
  * @param {string} customCategories Optional custom phoneme category codes.
- * @returns {string[]} List of possible phoneme sequences matching the given pattern of categories.
+ * @returns {string[][]} List of possible phoneme sequences matching the given pattern of categories.
  */
 export function expandCategories(inputString, customCategories) {
     if (!stringHasCategories(inputString, customCategories)) {
       // nest in list for consistency
-      return [inputString]
+      return [inputString.split('')]
     }
 
     const categories = customCategories !== undefined ? customCategories : tCategories
@@ -299,7 +320,5 @@ export function expandCategories(inputString, customCategories) {
         }
     }
 
-    // replace each phoneme list with joined string
-    output.forEach((op, i) => { output[i] = op.join('') })
     return output
 }

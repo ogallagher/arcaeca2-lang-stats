@@ -138,19 +138,23 @@ describe('FindHoles', function() {
         it('handles trivial patterns', function() {
             assert.deepStrictEqual(
                 expandCategories('bad', categories),
-                ['bad'],
+                ['bad'.split('')],
                 `string bad with no categories ${Object.keys(categories)} should be itself`
             )
 
             assert.deepStrictEqual(
                 expandCategories('', categories),
-                ['']
+                [[]]
             )
         })
 
         it('handles non trivial patterns', function() {
             let sequences = expandCategories('AB', categories)
-            console.log(sequences.join('\n'))
+            let strings = []
+            sequences.forEach((sequence) => {
+                strings.push(sequence.join(','))
+            })
+            console.log(strings.join('\n'))
 
             assert.strictEqual(
                 sequences.length, 
@@ -160,9 +164,13 @@ describe('FindHoles', function() {
             sequences = expandCategories('tV')
             console.log(sequences)
             
+            let expected = ["ta","tạ","te","ti","to","tu"]
+            expected.forEach((value, index) => {
+                expected[index] = value.split('')
+            })
             assert.deepStrictEqual(
                 sequences,
-                ["ta","tạ","te","ti","to","tu"]
+                expected
             )
         })
     })
@@ -173,34 +181,34 @@ describe('FindHoles', function() {
         describe('Stats', function() {
             let expected_stats = [
                 {
-                    a1: 4,
-                    a2: 3,
-                    a3: 1
+                    a1: { count: 4, phonemes: [ 'a1' ] },
+                    a2: { count: 3, phonemes: [ 'a2' ] },
+                    a3: { count: 1, phonemes: [ 'a3' ] }
                 },
                 {
-                    b1: 4,
-                    b2: 1
+                    b1: { count: 4, phonemes: [ 'b1' ] },
+                    b2: { count: 1, phonemes: [ 'b2' ] }
                 },
                 {
-                    a1a1b1: 0,
-                    a1a1b2: 0,
-                    a1a2b1: 1,
-                    a1a2b2: 0,
-                    a1a3b1: 0,
-                    a1a3b2: 0,
-                    a2a1b1: 0,
-                    a2a1b2: 0,
-                    a2a2b1: 0,
-                    a2a2b2: 0,
-                    a2a3b1: 0,
-                    a2a3b2: 0,
-                    a3a1b1: 0,
-                    a3a1b2: 0,
-                    a3a2b1: 0,
-                    a3a2b2: 0,
-                    a3a3b1: 0,
-                    a3a3b2: 0
-                }
+                    a1a1b1: { count: 0, phonemes: [ 'a1', 'a1', 'b1' ] },
+                    a1a1b2: { count: 0, phonemes: [ 'a1', 'a1', 'b2' ] },
+                    a1a2b1: { count: 1, phonemes: [ 'a1', 'a2', 'b1' ] },
+                    a1a2b2: { count: 0, phonemes: [ 'a1', 'a2', 'b2' ] },
+                    a1a3b1: { count: 0, phonemes: [ 'a1', 'a3', 'b1' ] },
+                    a1a3b2: { count: 0, phonemes: [ 'a1', 'a3', 'b2' ] },
+                    a2a1b1: { count: 0, phonemes: [ 'a2', 'a1', 'b1' ] },
+                    a2a1b2: { count: 0, phonemes: [ 'a2', 'a1', 'b2' ] },
+                    a2a2b1: { count: 0, phonemes: [ 'a2', 'a2', 'b1' ] },
+                    a2a2b2: { count: 0, phonemes: [ 'a2', 'a2', 'b2' ] },
+                    a2a3b1: { count: 0, phonemes: [ 'a2', 'a3', 'b1' ] },
+                    a2a3b2: { count: 0, phonemes: [ 'a2', 'a3', 'b2' ] },
+                    a3a1b1: { count: 0, phonemes: [ 'a3', 'a1', 'b1' ] },
+                    a3a1b2: { count: 0, phonemes: [ 'a3', 'a1', 'b2' ] },
+                    a3a2b1: { count: 0, phonemes: [ 'a3', 'a2', 'b1' ] },
+                    a3a2b2: { count: 0, phonemes: [ 'a3', 'a2', 'b2' ] },
+                    a3a3b1: { count: 0, phonemes: [ 'a3', 'a3', 'b1' ] },
+                    a3a3b2: { count: 0, phonemes: [ 'a3', 'a3', 'b2' ] }
+                  }
             ]
 
             let i = 0
