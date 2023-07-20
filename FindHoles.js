@@ -93,7 +93,15 @@ function OStats(sPattern, words, categories) {
 	console.log(str)
 }
 
-// given some pattern ABC, find combinations of ABC that don't appear in the lexicon, even though AB and BC individually do
+/**
+ * Given some pattern ABC, find combinations of ABC that don't appear in the lexicon, even though AB and BC individually do.
+ * 
+ * @param {string} sPattern 
+ * @param {string} words 
+ * @param {Object} categories 
+ * 
+ * @returns {string} List of strings of the given pattern that have unusually low occurrence given the ocurrences of its substrings.
+ */
 export function FindHoles(sPattern, words, categories) {
 	let tPattern = Stats(sPattern, words, categories) // results for search on "ABC"
 	let tTop = Stats(sPattern.substring(0,2), words, categories) // results for search on "AB"
@@ -104,9 +112,10 @@ export function FindHoles(sPattern, words, categories) {
 	for (let sKey in tPattern) { // for each "ABC" we tallied up the results for,
 		let sTop = sKey.substring(0,2) // the corresponding "AB"
 		let sBottom = sKey.substring(1) // the corresponding "BC"
+    console.log(`whole start end:\t${sKey}\t${sTop}\t${sBottom}\t|\t${tPattern[sKey]}\t${tTop[sTop]}\t${tBottom[sBottom]}`)
 		
 		// if "AB" occurs, and "BC" occurs, but "ABC" doesn't
-		if ( (tTop[sTop] < 2) && (tBottom[sBottom] < 2) && (tPattern[sKey] > 2) ) {
+		if ( (tTop[sTop] >= 1) && (tBottom[sBottom] >= 1) && (tPattern[sKey] < 1) ) {
 			// I'm not really sure what a good metric would be for deciding if a combination "occurs" or not
 			tOut.push(sKey)
 		}

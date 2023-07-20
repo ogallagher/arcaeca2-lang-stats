@@ -24,7 +24,7 @@ import {
 describe('Array', function() {
     describe('#indexOf()', function() {
         it('should return -1 when value is missing', function() {
-            assert.equal([1,2,3].indexOf(4), -1)
+            assert.strictEqual([1,2,3].indexOf(4), -1)
         })
     })
 })
@@ -167,7 +167,7 @@ describe('FindHoles', function() {
         })
     })
 
-    describe.only('lexicon analysis', function() {
+    describe('lexicon analysis', function() {
         let lexicon = 'a1 b1 a1a2b1 a1a3b3 a1b1b2b1 a2a2'
 
         describe('Stats', function() {
@@ -226,7 +226,10 @@ describe('FindHoles', function() {
         describe('FindHoles', function() {
             it('finds a hole when pattern not found', function() {
                 let pattern = 'AAA'
+                console.log('AAA:')
                 console.log(Stats(pattern, lexicon, categories))
+                console.log('AA:')
+                console.log(Stats(pattern.substring(0, 2), lexicon, categories))
 
                 let res = FindHoles(pattern, lexicon, categories)
                 console.log(res)
