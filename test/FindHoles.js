@@ -2,23 +2,17 @@
  * FindHoles unit tests.
  */
 
-import assert from 'assert'
-import {
+const assert = require('assert')
+const {
     describe,
     it,
     before,
     after,
     beforeEach,
     afterEach
-} from 'mocha'
+} = require('mocha')
 
-import {
-    FindHoles,
-    multiply,
-    expandCategories,
-    stringHasCategories,
-    Stats
-} from '../FindHoles.js'
+const lang_stats = require('../FindHoles.js')
 
 // example from [mocha](https://mochajs.org/) docs
 describe('Array', function() {
@@ -29,7 +23,7 @@ describe('Array', function() {
     })
 })
 
-describe('FindHoles', function() {
+describe('lang_stats', function() {
     const categories = {
         'A': ['a1', 'a2', 'a3'],
         'B': ['b1', 'b2']
@@ -53,7 +47,7 @@ describe('FindHoles', function() {
 
     describe('multiply', function() {
         it('returns empty list when both args are empty', function() {
-            let res = multiply([], [])
+            let res = lang_stats.multiply([], [])
             assert.strictEqual(res.length, 0)
         })
 
@@ -62,12 +56,12 @@ describe('FindHoles', function() {
                 ['a1', 'b1'],
                 ['a2', 'b2']
             ]
-            let res = multiply(sequences, [])
+            let res = lang_stats.multiply(sequences, [])
             assert.strictEqual(sequences, res)
         })
 
         it('returns phonemes if input sequences are empty', function() {
-            let res = multiply([], categories['A'])
+            let res = lang_stats.multiply([], categories['A'])
             assert.strictEqual(res, categories['A'])
         })
 
@@ -76,7 +70,7 @@ describe('FindHoles', function() {
                 ['11', '12', '13'],
                 ['21', '22', '23']
             ]
-            let res = multiply(sequences, categories['B'])
+            let res = lang_stats.multiply(sequences, categories['B'])
 
             assert.strictEqual(
                 res.length, 
@@ -95,13 +89,13 @@ describe('FindHoles', function() {
         it('handles true positive', function() {
             // complete
             assert.strictEqual(
-                stringHasCategories('ABBA', categories),
+                lang_stats.stringHasCategories('ABBA', categories),
                 true,
                 `failed to find categories ${Object.keys(categories)} in ABBA`
             )
             // partial
             assert.strictEqual(
-                stringHasCategories('abBa', categories),
+                lang_stats.stringHasCategories('abBa', categories),
                 true,
                 `failed to find categories ${Object.keys(categories)} in abBa`
             )
@@ -109,12 +103,12 @@ describe('FindHoles', function() {
 
         it('handles true negative', function() {
             assert.strictEqual(
-                stringHasCategories('ab', categories),
+                lang_stats.stringHasCategories('ab', categories),
                 false
             )
 
             assert.strictEqual(
-                stringHasCategories('', categories),
+                lang_stats.stringHasCategories('', categories),
                 false
             )
         })
@@ -137,19 +131,19 @@ describe('FindHoles', function() {
 
         it('handles trivial patterns', function() {
             assert.deepStrictEqual(
-                expandCategories('bad', categories),
+                lang_stats.expandCategories('bad', categories),
                 ['bad'.split('')],
                 `string bad with no categories ${Object.keys(categories)} should be itself`
             )
 
             assert.deepStrictEqual(
-                expandCategories('', categories),
+                lang_stats.expandCategories('', categories),
                 [[]]
             )
         })
 
         it('handles non trivial patterns', function() {
-            let sequences = expandCategories('AB', categories)
+            let sequences = lang_stats.expandCategories('AB', categories)
             let strings = []
             sequences.forEach((sequence) => {
                 strings.push(sequence.join(','))
@@ -161,7 +155,7 @@ describe('FindHoles', function() {
                 categories['A'].length * categories['B'].length
             )
 
-            sequences = expandCategories('tV')
+            sequences = lang_stats.expandCategories('tV')
             console.log(sequences)
             
             let expected = ["ta","tạ","te","ti","to","tu"]
@@ -219,7 +213,7 @@ describe('FindHoles', function() {
             ]) {
                 let expected = expected_stats[i]
                 it(`finds pattern ${i} matches for ${pattern}`, function() {
-                    let stats = Stats(pattern, lexicon, categories)
+                    let stats = lang_stats.Stats(pattern, lexicon, categories)
                     console.log(stats)
                     assert.deepStrictEqual(
                         stats,
@@ -235,20 +229,20 @@ describe('FindHoles', function() {
             it('finds a hole when pattern not found', function() {
                 let pattern = 'AAA'
                 console.log('AAA:')
-                console.log(Stats(pattern, lexicon, categories))
+                console.log(lang_stats.Stats(pattern, lexicon, categories))
                 console.log('AA:')
-                console.log(Stats(pattern.substring(0, 2), lexicon, categories))
+                console.log(lang_stats.Stats(pattern.substring(0, 2), lexicon, categories))
 
-                let res = FindHoles(pattern, lexicon, categories)
+                let res = lang_stats.FindHoles(pattern, lexicon, categories)
                 console.log(res)
                 assert.ok(res.length > 0)
             })
 
             it('does not find a hole when pattern present', function() {
                 let pattern = 'BBB'
-                console.log(Stats(pattern, lexicon, categories))
+                console.log(lang_stats.Stats(pattern, lexicon, categories))
 
-                let res = FindHoles(pattern, lexicon, categories)
+                let res = lang_stats.FindHoles(pattern, lexicon, categories)
                 console.log(res)
                 assert.strictEqual(res.length, 0)
             })

@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "mocha --inline-diffs test",
-    "serve": "node server.js"
+    "serve": "node server.js",
+    "backend": "node main.js"
   },
   "keywords": [
     "conlang",

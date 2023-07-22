@@ -2,7 +2,9 @@
  * Adapted from https://pastebin.com/jbA8qHKK
  */
 
-import { readFileSync } from 'node:fs'
+const fs = require('node:fs')
+
+// TODO remove default categories and words
 
 /**
  * Default phoneme categories, where a phoneme is a collection of characters that are considered 1 unit of sound.
@@ -19,7 +21,7 @@ const tCategories = {
  * 
  * The entire lexicon of Old Mtsqrveli compressed into one, space-delimited line.
  */
-var sWords = readFileSync('resources/old_mtsqrveli_lexicon.txt', 'utf-8')
+var sWords = fs.readFileSync('resources/old_mtsqrveli_lexicon.txt', 'utf-8')
 console.log(`first 100 chars of mtsqrveli raw lexicon = ${sWords.substring(0, 100)}`)
 
 // returns a dictionary sorted by value in descending order
@@ -50,7 +52,7 @@ function sort_object(obj) {
  * 
  * @returns {Object} The number of matches in the lexicon of each segment that matches sPattern.
  */
-export function Stats(sPattern, words, categories) {
+function Stats(sPattern, words, categories) {
   words = words !== undefined ? words : sWords
   categories = categories !== undefined ? categories : tCategories
 
@@ -92,6 +94,7 @@ export function Stats(sPattern, words, categories) {
 	}
 	return tOut
 }
+exports.Stats = Stats
 
 /**
  * Same as {@link Stats}, but with result keys reverse sorted.
@@ -114,7 +117,7 @@ function OStats(sPattern, words, categories) {
  * 
  * @returns {string} List of strings of the given pattern that have unusually low occurrence given the ocurrences of its substrings.
  */
-export function FindHoles(sPattern, words, categories) {
+function FindHoles(sPattern, words, categories) {
 	let tPattern = Stats(sPattern, words, categories) // results for search on "ABC"
 	let tTop = Stats(sPattern.substring(0,2), words, categories) // results for search on "AB"
 	let tBottom = Stats(sPattern.substring(1), words, categories) // results for search on "BC"
@@ -127,8 +130,9 @@ export function FindHoles(sPattern, words, categories) {
 		let end = full.slice(1) // the corresponding BC
     let startStr = start.join('')
     let endStr = end.join('')
+    // TODO include counts in output
     console.log(
-      `whole start end:`
+      `debug whole start end:`
       + `\t${sKey}\t${startStr}\t${endStr}\t|`
       + `\t${tPattern[sKey].count}\t${tTop[startStr].count}\t${tBottom[endStr].count}`
     )
@@ -142,7 +146,7 @@ export function FindHoles(sPattern, words, categories) {
 	
 	return tOut
 }
-export default FindHoles
+exports.FindHoles = FindHoles
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -168,7 +172,7 @@ function categoryValueToString(array = []) {
  * @param {string[]} phonemes Set of possible char combos/phonemes that fall into the current category.
  * @returns {string[][]} List of modified sequences, or empty list.
  */
-export function multiply(sequences, phonemes) {
+function multiply(sequences, phonemes) {
   if (sequences.length === 0 && phonemes.length === 0) {
     return []
   }
@@ -191,6 +195,7 @@ export function multiply(sequences, phonemes) {
   }
   return product
 }
+exports.multiply = multiply
 
 function expandMultiCharacterCategory(inputString) {
   const multiCharCategories = Object.keys(tCategories).filter((key) => key.length > 1).sort((category1, category2) => category2.length - category1.length)
@@ -280,7 +285,7 @@ function split(inputString) {
  * @param {string} customCategories Optional custom phoneme category codes.
  * @returns {boolean} Whether any phoneme categories are present in the string. If the string is empty, return `false`.
  */
-export function stringHasCategories(inputString, customCategories) {
+function stringHasCategories(inputString, customCategories) {
     const categories = customCategories !== undefined ? customCategories : tCategories
     for (const key of Object.keys(categories)) {
         if (inputString.includes(key)) {
@@ -289,6 +294,7 @@ export function stringHasCategories(inputString, customCategories) {
     }
     return false
 }
+exports.stringHasCategories = stringHasCategories
                
 /**
  * Generate list of possible strings following the given pattern (sequence of categories).
@@ -299,7 +305,7 @@ export function stringHasCategories(inputString, customCategories) {
  * @param {string} customCategories Optional custom phoneme category codes.
  * @returns {string[][]} List of possible phoneme sequences matching the given pattern of categories.
  */
-export function expandCategories(inputString, customCategories) {
+function expandCategories(inputString, customCategories) {
     if (!stringHasCategories(inputString, customCategories)) {
       // nest in list for consistency
       return [inputString.split('')]
@@ -322,3 +328,4 @@ export function expandCategories(inputString, customCategories) {
 
     return output
 }
+exports.expandCategories = expandCategories
