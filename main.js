@@ -4,6 +4,7 @@
 
 const fs = require('node:fs')
 const lang_stats = require('./FindHoles.js')
+console.log(lang_stats)
 
 const categories = {
 	'C': "b,d,dz,g,ġ,gh,h,j,k,k',kh,l,m,n,p,p',q,q',r,s,ş,t,t',ts,ts',tş,tş',v,z".split(','),

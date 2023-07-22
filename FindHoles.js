@@ -316,11 +316,9 @@ function expandCategories(inputString, customCategories) {
 
 // backend exports
 if (typeof exports != 'undefined') {
-  exports = {
-    'Stats': Stats,
-    'FindHoles': FindHoles,
-    'multiply': multiply,
-    'stringHasCategories': stringHasCategories,
-    'expandCategories': expandCategories
-  }
+  exports.Stats = Stats
+  exports.FindHoles = FindHoles
+  exports.multiply = multiply
+  exports.stringHasCategories = stringHasCategories
+  exports.expandCategories = expandCategories
 }
