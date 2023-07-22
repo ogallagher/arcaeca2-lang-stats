@@ -2,16 +2,6 @@
  * Adapted from https://pastebin.com/jbA8qHKK
  */
 
-// TODO remove default categories
-
-/**
- * Default phoneme categories, where a phoneme is a collection of characters that are considered 1 unit of sound.
- */
-const tCategories = {
-	'C': "b,d,dz,g,ġ,gh,h,j,k,k',kh,l,m,n,p,p',q,q',r,s,ş,t,t',ts,ts',tş,tş',v,z".split(','),
-	'V': "a,ạ,e,i,o,u".split(',')
-}
-
 ///////////////////////////////////////////////////////////
 
 // returns a dictionary sorted by value in descending order
@@ -43,8 +33,6 @@ function sort_object(obj) {
  * @returns {Object} The number of matches in the lexicon of each segment that matches sPattern.
  */
 function Stats(sPattern, words, categories) {
-  categories = categories !== undefined ? categories : tCategories
-
   // get all combinations that fit the pattern
 	let tCombos = expandCategories(sPattern, categories)
 
@@ -183,11 +171,11 @@ function multiply(sequences, phonemes) {
   return product
 }
 
-function expandMultiCharacterCategory(inputString) {
-  const multiCharCategories = Object.keys(tCategories).filter((key) => key.length > 1).sort((category1, category2) => category2.length - category1.length)
+function expandMultiCharacterCategory(inputString, categories) {
+  const multiCharCategories = Object.keys(categories).filter((key) => key.length > 1).sort((category1, category2) => category2.length - category1.length)
   let output = inputString
   for (let category of multiCharCategories) {
-    const expandedCategoryString = categoryValueToString(tCategories[category])
+    const expandedCategoryString = categoryValueToString(categories[category])
     while (output.includes(category)) {
       output = output.replace(category, expandedCategoryString)
     }
@@ -268,11 +256,10 @@ function split(inputString) {
  * Whether the given string contains any chars that are category codes.
  * 
  * @param {string} inputString A string expected to be a sequence of phoneme category codes.
- * @param {string} customCategories Optional custom phoneme category codes.
+ * @param {string} categories Custom phoneme category codes.
  * @returns {boolean} Whether any phoneme categories are present in the string. If the string is empty, return `false`.
  */
-function stringHasCategories(inputString, customCategories) {
-    const categories = customCategories !== undefined ? customCategories : tCategories
+function stringHasCategories(inputString, categories) {
     for (const key of Object.keys(categories)) {
         if (inputString.includes(key)) {
             return true
@@ -287,16 +274,15 @@ function stringHasCategories(inputString, customCategories) {
  * // TODO handle new return type everywhere
  * 
  * @param {string} inputString Sequence of phoneme category codes.
- * @param {string} customCategories Optional custom phoneme category codes.
+ * @param {string} categories Custom phoneme category codes.
  * @returns {string[][]} List of possible phoneme sequences matching the given pattern of categories.
  */
-function expandCategories(inputString, customCategories) {
-    if (!stringHasCategories(inputString, customCategories)) {
+function expandCategories(inputString, categories) {
+    if (!stringHasCategories(inputString, categories)) {
       // nest in list for consistency
       return [inputString.split('')]
     }
 
-    const categories = customCategories !== undefined ? customCategories : tCategories
     let output = [[]]
 
     for (let i = 0, ch = inputString.charAt(0); i < inputString.length; i++, ch = inputString.charAt(i)) {
