@@ -28,6 +28,10 @@ describe('lang_stats', function() {
         'A': ['a1', 'a2', 'a3'],
         'B': ['b1', 'b2']
     }
+    const categories_mtsqrveli = {
+        'C': "b,d,dz,g,ġ,gh,h,j,k,k',kh,l,m,n,p,p',q,q',r,s,ş,t,t',ts,ts',tş,tş',v,z".split(','),
+        'V': "a,ạ,e,i,o,u".split(',')
+    }
 
     before(function() {
         console.log('begin FindHoles tests')
@@ -155,7 +159,7 @@ describe('lang_stats', function() {
                 categories['A'].length * categories['B'].length
             )
 
-            sequences = lang_stats.expandCategories('tV')
+            sequences = lang_stats.expandCategories('tV', categories_mtsqrveli)
             console.log(sequences)
             
             let expected = ["ta","tạ","te","ti","to","tu"]
