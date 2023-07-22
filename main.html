@@ -17,26 +17,12 @@
 			crossorigin="anonymous"/>
         
         <script type="text/javascript" src="/frontend.js"></script>
+        <script type="text/javascript" src="/FindHoles.js"></script>
 
         <script type="text/javascript">
             window.addEventListener('load', function() {
                 console.log('debug window.load')
-
-                new Promise(function(res) {
-                    return http_get('/resources/old_mtsqrveli_lexicon.txt').then(res)
-                })
-                .then(
-                    // handle lexicon file
-                    (lexicon) => {
-                        main(lexicon)
-                    },
-                    // file load failure
-                    (err) => {
-                        console.log(
-                            `error unable to load file. ${err.stack}`
-                        )
-                    }
-                )
+                main()
             })
         </script>
     </head>

@@ -2,9 +2,7 @@
  * Adapted from https://pastebin.com/jbA8qHKK
  */
 
-const fs = require('node:fs')
-
-// TODO remove default categories and words
+// TODO remove default categories
 
 /**
  * Default phoneme categories, where a phoneme is a collection of characters that are considered 1 unit of sound.
@@ -15,14 +13,6 @@ const tCategories = {
 }
 
 ///////////////////////////////////////////////////////////
-
-/**
- * Default space word set/text.
- * 
- * The entire lexicon of Old Mtsqrveli compressed into one, space-delimited line.
- */
-var sWords = fs.readFileSync('resources/old_mtsqrveli_lexicon.txt', 'utf-8')
-console.log(`first 100 chars of mtsqrveli raw lexicon = ${sWords.substring(0, 100)}`)
 
 // returns a dictionary sorted by value in descending order
 // (otherwise by default dictionaries are unordered, but will display by keys in alphabetical order)
@@ -53,7 +43,6 @@ function sort_object(obj) {
  * @returns {Object} The number of matches in the lexicon of each segment that matches sPattern.
  */
 function Stats(sPattern, words, categories) {
-  words = words !== undefined ? words : sWords
   categories = categories !== undefined ? categories : tCategories
 
   // get all combinations that fit the pattern
@@ -94,7 +83,6 @@ function Stats(sPattern, words, categories) {
 	}
 	return tOut
 }
-exports.Stats = Stats
 
 /**
  * Same as {@link Stats}, but with result keys reverse sorted.
@@ -146,7 +134,6 @@ function FindHoles(sPattern, words, categories) {
 	
 	return tOut
 }
-exports.FindHoles = FindHoles
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -195,7 +182,6 @@ function multiply(sequences, phonemes) {
   }
   return product
 }
-exports.multiply = multiply
 
 function expandMultiCharacterCategory(inputString) {
   const multiCharCategories = Object.keys(tCategories).filter((key) => key.length > 1).sort((category1, category2) => category2.length - category1.length)
@@ -294,7 +280,6 @@ function stringHasCategories(inputString, customCategories) {
     }
     return false
 }
-exports.stringHasCategories = stringHasCategories
                
 /**
  * Generate list of possible strings following the given pattern (sequence of categories).
@@ -328,4 +313,14 @@ function expandCategories(inputString, customCategories) {
 
     return output
 }
-exports.expandCategories = expandCategories
+
+// backend exports
+if (typeof exports != 'undefined') {
+  exports = {
+    'Stats': Stats,
+    'FindHoles': FindHoles,
+    'multiply': multiply,
+    'stringHasCategories': stringHasCategories,
+    'expandCategories': expandCategories
+  }
+}
