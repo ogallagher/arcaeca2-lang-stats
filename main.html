@@ -16,24 +16,33 @@
 			integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" 
 			crossorigin="anonymous"/>
         
-        <script type="text/javascript" src="/frontend.js"></script>
-        <script type="text/javascript" src="/FindHoles.js"></script>
+        <script type="text/javascript" src="./frontend.js"></script>
+        <script type="text/javascript" src="./FindHoles.js"></script>
 
         <script type="text/javascript">
             window.addEventListener('load', function() {
                 console.log('debug window.load')
-                main()
+                main('words-file-input')
             })
         </script>
     </head>
-    <body class="container">
+    <body class="container bg-dark text-light">
         <h1>LangStats - Home</h1>
 
         <main>
+            <div class="mb-3">
+                <label for="words-file-input" class="form-label" >
+                    Select input file to analyze (see examples in <span class="font-monospace">resources/</span>)
+                </label>
+                <input 
+                    class="form-control" type="file" 
+                    id="words-file-input"
+                    />
+            </div>
             <div>
                 See the dev console for results.
             </div>
-            <div id="console-out">
+            <div id="console-out" class="font-monospace border border-light">
                 <!--TODO load logs into here-->
             </div>
         </main>

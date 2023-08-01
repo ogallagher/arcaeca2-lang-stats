@@ -28,4 +28,20 @@ Run mocha tests with `npm test`.
 
 ## Usage
 
-Instructions pending.
+### Frontend, in webpage
+
+Open `main.html` in a browser.
+
+### Backend
+
+Use the `npm run` shortcut
+
+```bash
+npm run backend
+```
+
+or the underlying command.
+
+```bash
+node main.js
+```
