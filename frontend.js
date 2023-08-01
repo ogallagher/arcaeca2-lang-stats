@@ -1,54 +1,63 @@
+const categories = {
+    'C': "b,d,dz,g,ġ,gh,h,j,k,k',kh,l,m,n,p,p',q,q',r,s,ş,t,t',ts,ts',tş,tş',v,z".split(','),
+    'V': "a,ạ,e,i,o,u".split(',')
+}
+
 /**
  * 
- * @param {string | URL} url 
- * @param {responseType} See {@link XMLHttpRequest.responseType} for accepted values.
- * @returns {Promise<string>} Data from response according to the requested `responseType`.
+ * @param {InputEvent} input_event
  */
-function http_get(url, responseType='') {
-    const http = new XMLHttpRequest()
-    http.responseType = responseType
-    http.open('GET', url)
-    http.send()
+function on_words_file_input(input_event) {
+    return new Promise(function(resolve, reject) {
+        console.log('debug on_words_file_input')
 
-    return new Promise(function(res, rej) {
-        http.onload = (e) => {
-            console.log(`debug loaded from ${url}. responseType=${http.responseType}`)
-            
-            res(http.response)
+        /**
+         * @type {HTMLInputElement}
+         */
+        const input = input_event.target
+    
+        if (input.files.length == 0) {
+            console.log('info no words file selected')
+            reject()
         }
-        http.onerror = (e) => {
-            rej(new Error(`error failed to load ${url}. ${http.responseText} ${e}`))
+        else {
+            let file = input.files[0]
+            console.log(`info load words from ${file.name} of size ${file.size}`)
+
+            let reader = new FileReader()
+            reader.onerror = (err) => {
+                console.log(`error failed to read words file as text ${err.stack}`)
+                reject()
+            }
+            reader.onload = (event) => {
+                console.log(`info words file load passed`)
+                resolve(reader.result)
+            }
+
+            reader.readAsText(file)
         }
     })
+    .then(analyze_words)
+    .then(display_results)
+}
+
+function analyze_words(words) {
+    console.log(`info perform lang stats on ${words.substring(0, 100)}`)
+    
+    // run stats
+    let res = FindHoles('VCC', words, categories)
+
+    return res
+}
+
+function display_results(analysis) {
+    console.log(analysis)
 }
 
 /**
  * Frontend main method.
  */
-function main() {
-    const categories = {
-        'C': "b,d,dz,g,ġ,gh,h,j,k,k',kh,l,m,n,p,p',q,q',r,s,ş,t,t',ts,ts',tş,tş',v,z".split(','),
-        'V': "a,ạ,e,i,o,u".split(',')
-    }
-    
-    const words_file_path = 'resources/old_mtsqrveli_lexicon.txt'
-
-    // load file
-    console.log(`info load words from ${words_file_path}`)
-    http_get(words_file_path)
-    .then(
-        function(words) {
-            console.log(`info perform lang stats on ${words.substring(0, 100)}`)
-
-            // run stats
-            let res = FindHoles('VCC', words, categories)
-
-            // display stats
-            console.log(res)
-        },
-        // file load error
-        function(err) {
-            console.log(`error failed to load ${words_file_path}. ${err.stack}`)
-        }
-    )
+function main(words_file_input_id) {
+    const words_file_input_el = document.getElementById(words_file_input_id)
+    words_file_input_el.addEventListener('change', on_words_file_input)
 }
