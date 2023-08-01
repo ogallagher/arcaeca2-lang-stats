@@ -2,7 +2,7 @@
   "name": "arcaeca2-lang-stats",
   "version": "0.1.0",
   "description": "Scripts for analyzing constructed languages.",
-  "main": "main.js",
+  "main": "main.mjs",
   "type": "commonjs",
   "directories": {
     "test": "test"
@@ -27,5 +27,8 @@
   },
   "dependencies": {
     "express": "^4.18.2"
+  },
+  "optionalDependencies": {
+    "temp_js_logger": "^0.7.1"
   }
 }

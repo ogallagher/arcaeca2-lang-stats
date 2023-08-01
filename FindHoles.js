@@ -91,7 +91,7 @@ function OStats(sPattern, words, categories) {
  * @param {string} words 
  * @param {Object} categories 
  * 
- * @returns {string} List of strings of the given pattern that have unusually low occurrence given the ocurrences of its substrings.
+ * @returns {string[]} List of strings of the given pattern that have unusually low occurrence given the ocurrences of its substrings.
  */
 function FindHoles(sPattern, words, categories) {
 	let tPattern = Stats(sPattern, words, categories) // results for search on "ABC"
