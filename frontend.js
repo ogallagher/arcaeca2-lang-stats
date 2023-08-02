@@ -1,4 +1,5 @@
 try {
+    // I don't currently know how to see documentation for this in IDE another way
     const { TempLogger } = require("temp_js_logger")
 }
 catch (err) {
