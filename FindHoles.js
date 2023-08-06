@@ -34,31 +34,31 @@ function sort_object(obj) {
  */
 function Stats(sPattern, words, categories) {
   // get all combinations that fit the pattern
-	let tCombos = expandCategories(sPattern, categories)
+  let tCombos = expandCategories(sPattern, categories)
 
   let tComboStrings = []
   tCombos.forEach((phonemes) => {
     tComboStrings.push(phonemes.join(''))
   })
 
-	let tOut = {}
-	for (let i = 0; i < tCombos.length; i++) {
+  let tOut = {}
+  for (let i = 0; i < tCombos.length; i++) {
     /**
      * @type {Object.<string, {count: number, phonemes: string[][]}>}
      */
-		tOut[tComboStrings[i]] = {
+    tOut[tComboStrings[i]] = {
       // value.count is number of occurrences
       count: 0,
       // value.phonemes is phoneme sequence
       phonemes: tCombos[i]
     }
-	}
+  }
 
-	// sort the combinations by descending length*, then smoosh into a regex
-	// (* since some of the consonants are digraphs, e.g. "gh", and regexes match the first thing they can,
-	//    if we don't force it to try to match longer combinations first, it would never match e.g. "agh" -
-	//    that would always be counted as a match for "ag".)
-	let re = new RegExp(
+  // sort the combinations by descending length*, then smoosh into a regex
+  // (* since some of the consonants are digraphs, e.g. "gh", and regexes match the first thing they can,
+  //    if we don't force it to try to match longer combinations first, it would never match e.g. "agh" -
+  //    that would always be counted as a match for "ag".)
+  let re = new RegExp(
     tComboStrings.sort(function(a,b) { 
       return b.length - a.length 
     }).join('|'), 
@@ -66,10 +66,10 @@ function Stats(sPattern, words, categories) {
   )
   let result
 
-	while (result = re.exec(words)) {
-		tOut[result[0]].count += 1
-	}
-	return tOut
+  while (result = re.exec(words)) {
+    tOut[result[0]].count += 1
+  }
+  return tOut
 }
 
 /**
@@ -79,9 +79,9 @@ function Stats(sPattern, words, categories) {
  * @param {Object?} categories
  */
 function OStats(sPattern, words, categories) {
-	let tOStats = sort_object(Stats(sPattern, words, categories))
-	let str = '{\n' + Object.getOwnPropertyNames(tOStats).map(key => `  ${key}: ${tOStats[key]}`).join('\n') + '\n}'
-	console.log(str)
+  let tOStats = sort_object(Stats(sPattern, words, categories))
+  let str = '{\n' + Object.getOwnPropertyNames(tOStats).map(key => `  ${key}: ${tOStats[key]}`).join('\n') + '\n}'
+  console.log(str)
 }
 
 /**
@@ -94,16 +94,16 @@ function OStats(sPattern, words, categories) {
  * @returns {string[]} List of strings of the given pattern that have unusually low occurrence given the ocurrences of its substrings.
  */
 function FindHoles(sPattern, words, categories) {
-	let tPattern = Stats(sPattern, words, categories) // results for search on "ABC"
-	let tTop = Stats(sPattern.substring(0,2), words, categories) // results for search on "AB"
-	let tBottom = Stats(sPattern.substring(1), words, categories) // results for search on "BC"
-	
-	let tOut = []
+  let tPattern = Stats(sPattern, words, categories) // results for search on "ABC"
+  let tTop = Stats(sPattern.substring(0,2), words, categories) // results for search on "AB"
+  let tBottom = Stats(sPattern.substring(1), words, categories) // results for search on "BC"
   
-	for (let sKey in tPattern) { // for each ABC we tallied up the results for
+  let tOut = []
+  
+  for (let sKey in tPattern) { // for each ABC we tallied up the results for
     let full = tPattern[sKey].phonemes
-		let start = full.slice(0,2) // the corresponding AB
-		let end = full.slice(1) // the corresponding BC
+    let start = full.slice(0,2) // the corresponding AB
+    let end = full.slice(1) // the corresponding BC
     let startStr = start.join('')
     let endStr = end.join('')
     // TODO include counts in output
@@ -112,15 +112,15 @@ function FindHoles(sPattern, words, categories) {
       + `\t${sKey}\t${startStr}\t${endStr}\t|`
       + `\t${tPattern[sKey].count}\t${tTop[startStr].count}\t${tBottom[endStr].count}`
     )
-		
-		// if "AB" occurs, and "BC" occurs, but "ABC" doesn't
-		if ( (tTop[startStr].count >= 1) && (tBottom[endStr].count >= 1) && (tPattern[sKey].count < 1) ) {
-			// I'm not really sure what a good metric would be for deciding if a combination "occurs" or not
-			tOut.push(sKey)
-		}
-	}
-	
-	return tOut
+    
+    // if "AB" occurs, and "BC" occurs, but "ABC" doesn't
+    if ( (tTop[startStr].count >= 1) && (tBottom[endStr].count >= 1) && (tPattern[sKey].count < 1) ) {
+      // I'm not really sure what a good metric would be for deciding if a combination "occurs" or not
+      tOut.push(sKey)
+    }
+  }
+  
+  return tOut
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -226,7 +226,7 @@ function expandSquareBrackets(inputString) {
     .reverse()
     .reduceRight(multiply)
     .map(join)
-	return output
+  return output
 }
 
 function split(inputString) {
