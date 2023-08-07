@@ -89,7 +89,7 @@ describe('lang_stats', function() {
         })
     })
 
-    describe('stringHasCategories', function() {
+    describe('string_has_categories', function() {
         it('handles true positive', function() {
             // complete
             assert.strictEqual(
@@ -118,7 +118,7 @@ describe('lang_stats', function() {
         })
     })
 
-    describe('expandCategories', function() {
+    describe('expand_categories', function() {
         it('correctly modifies a list of sequence lists', function() {
             let sequences = [
                 ['a', 'b'],
@@ -173,6 +173,15 @@ describe('lang_stats', function() {
         })
     })
 
+    describe('split_text_to_words', function() {
+        it('correctly splits text into words', function() {
+            assert.deepStrictEqual(
+                lang_stats.split_text_to_words(' one two\tthree \t\n\nfour '),
+                ['one', 'two', 'three', 'four']
+            )
+        })
+    })
+
     describe('lexicon analysis', function() {
         let lexicon = 'a1 b1 a1a2b1 a1a3b3 a1b1b2b1 a2a2'
 
@@ -181,21 +190,15 @@ describe('lang_stats', function() {
                 {
                     a1: {
                       count: 4,
-                      probability: 1.3333333333333333,
-                      phonemes: [ 'a1' ],
-                      actualExpectedRatio: 1.5
+                      phonemes: [ 'a1' ]
                     },
                     a2: {
                       count: 3,
-                      probability: 1,
-                      phonemes: [ 'a2' ],
-                      actualExpectedRatio: 1.125
+                      phonemes: [ 'a2' ]
                     },
                     a3: {
                       count: 1,
-                      probability: 0.3333333333333333,
-                      phonemes: [ 'a3' ],
-                      actualExpectedRatio: 0.375
+                      phonemes: [ 'a3' ]
                     }
                 },
                 {
@@ -215,111 +218,75 @@ describe('lang_stats', function() {
                 {
                     a1a1b1: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a1', 'a1', 'b1' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a1', 'a1', 'b1' ]
                     },
                     a1a1b2: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a1', 'a1', 'b2' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a1', 'a1', 'b2' ]
                     },
                     a1a2b1: {
                       count: 1,
-                      probability: 0.05555555555555555,
-                      phonemes: [ 'a1', 'a2', 'b1' ],
-                      actualExpectedRatio: 18
+                      phonemes: [ 'a1', 'a2', 'b1' ]
                     },
                     a1a2b2: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a1', 'a2', 'b2' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a1', 'a2', 'b2' ]
                     },
                     a1a3b1: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a1', 'a3', 'b1' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a1', 'a3', 'b1' ]
                     },
                     a1a3b2: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a1', 'a3', 'b2' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a1', 'a3', 'b2' ]
                     },
                     a2a1b1: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a2', 'a1', 'b1' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a2', 'a1', 'b1' ]
                     },
                     a2a1b2: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a2', 'a1', 'b2' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a2', 'a1', 'b2' ]
                     },
                     a2a2b1: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a2', 'a2', 'b1' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a2', 'a2', 'b1' ]
                     },
                     a2a2b2: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a2', 'a2', 'b2' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a2', 'a2', 'b2' ]
                     },
                     a2a3b1: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a2', 'a3', 'b1' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a2', 'a3', 'b1' ]
                     },
                     a2a3b2: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a2', 'a3', 'b2' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a2', 'a3', 'b2' ]
                     },
                     a3a1b1: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a3', 'a1', 'b1' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a3', 'a1', 'b1' ]
                     },
                     a3a1b2: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a3', 'a1', 'b2' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a3', 'a1', 'b2' ]
                     },
                     a3a2b1: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a3', 'a2', 'b1' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a3', 'a2', 'b1' ]
                     },
                     a3a2b2: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a3', 'a2', 'b2' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a3', 'a2', 'b2' ]
                     },
                     a3a3b1: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a3', 'a3', 'b1' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a3', 'a3', 'b1' ]
                     },
                     a3a3b2: {
                       count: 0,
-                      probability: 0,
-                      phonemes: [ 'a3', 'a3', 'b2' ],
-                      actualExpectedRatio: 0
+                      phonemes: [ 'a3', 'a3', 'b2' ]
                     }
                 }
             ]
@@ -333,27 +300,43 @@ describe('lang_stats', function() {
                 let expected = expected_stats[i]
                 it(`finds pattern ${i} matches for ${pattern}`, function() {
                     let stats = new lang_stats.Stats(pattern, categories)
-                    stats.calculateFrequencies(lexicon)
-                    console.log(stats.patternInstanceFrequencies)
+                    stats.calculate_frequencies(lexicon)
+                    console.log(stats.patt_inst_freqs)
                     for (let iStr of Object.keys(expected)) {
-                        assert.deepEqual(expected[iStr].phonemes, stats.patternInstanceFrequencies[iStr].phonemes)
-                        assert.deepEqual(expected[iStr].count, stats.patternInstanceFrequencies[iStr].count)
+                        assert.deepEqual(expected[iStr].phonemes, stats.patt_inst_freqs[iStr].phonemes)
+                        assert.deepEqual(expected[iStr].count, stats.patt_inst_freqs[iStr].count)
                     }
                 })
 
                 i++
             }
 
-            it.skip('never produces a probability ratio confidence interval including <= 0')
+            it.only('never produces a probability ratio confidence interval outside 0..1', function() {
+                let text = 'a1b1a1b1a1b1a1b1'
+                let stats = new lang_stats.Stats('AB', categories)
+                // a1b1 4 times in 1 word
+                stats.calculate_frequencies(text)
+                for (let pi_stats of Object.values(stats.patt_inst_freqs)) {
+                    assert.ok(
+                        pi_stats.probability >= 0 && pi_stats.probability <= 1,
+                        `probability of pattern instance ${pi_stats.phonemes.join(',')}=${pi_stats.probability} `
+                        + `outside bounds [0..1]`
+                    )
+                }
+            })
         })
 
-        describe.skip('FindHoles', function() {
+        describe('FindHoles', function() {
             it('finds a hole when pattern not found', function() {
                 let pattern = 'AAA'
                 console.log('AAA:')
-                console.log(lang_stats.Stats(pattern, lexicon, categories))
+                let aaa = new lang_stats.Stats(pattern, categories)
+                aaa.calculate_frequencies(lexicon)
+                console.log(aaa.patt_inst_freqs)
                 console.log('AA:')
-                console.log(lang_stats.Stats(pattern.substring(0, 2), lexicon, categories))
+                let aa = new lang_stats.Stats(pattern.substring(0, 2), categories)
+                aa.calculate_frequencies(lexicon)
+                console.log(aa.patt_inst_freqs)
 
                 let res = lang_stats.FindHoles(pattern, lexicon, categories)
                 console.log(res)
@@ -362,7 +345,9 @@ describe('lang_stats', function() {
 
             it('does not find a hole when pattern present', function() {
                 let pattern = 'BBB'
-                console.log(lang_stats.Stats(pattern, lexicon, categories))
+                let bbb = new lang_stats.Stats(pattern, categories)
+                bbb.calculate_frequencies(lexicon)
+                console.log(bbb.patt_inst_freqs)
 
                 let res = lang_stats.FindHoles(pattern, lexicon, categories)
                 console.log(res)

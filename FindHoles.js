@@ -2,6 +2,8 @@
  * Adapted from https://pastebin.com/jbA8qHKK
  */
 
+const WORD_DELIM = new RegExp('\\s+')
+
 ///////////////////////////////////////////////////////////
 
 // returns a dictionary sorted by value in descending order
@@ -31,7 +33,7 @@ class Stats {
    * Constructor.
    * 
    * @param {string} sPattern String sequence of category codes.
-   * @param {Object?} categories Optional custom set of categories.
+   * @param {Object?} categories Set of categories.
    */
   constructor(sPattern, categories) {
     /**
@@ -46,35 +48,35 @@ class Stats {
      *  count: number, 
      *  probability: number,
      *  phonemes: string[][], 
-     *  actualExpectedRatio: number
+     *  actual_expected_ratio: number
      * }>}
      */
-    this.patternInstanceFrequencies = {}
+    this.patt_inst_freqs = {}
     /**
      * Mean frequency across all instances of the pattern.
      * @type {number}
      */
-    this.frequencyMean = -1
+    this.freq_mean = -1
     /**
      * Mean probability.
      * @type {number}
      */
-    this.probabilityMean = -1
+    this.prob_mean = -1
     /**
      * Standard deviation of frequency across all instances of the pattern.
      * @type {number}
      */
-    this.frequencyDeviation = -1
+    this.freq_dev = -1
     /**
      * Probability standard deviation.
      * @type {number}
      */
-    this.probabilityDeviation = -1
+    this.prob_dev = -1
     
     // calculate stats
     
     // get all phoneme sequences that fit the pattern (pattern instances)
-    let sequences = expandCategories(this.pattern, categories)
+    let sequences = expand_categories(this.pattern, categories)
 
     let strings = []
     sequences.forEach((phonemes) => {
@@ -97,14 +99,14 @@ class Stats {
     )
     
     for (let i = 0; i < sequences.length; i++) {
-      this.patternInstanceFrequencies[strings[i]] = {
+      this.patt_inst_freqs[strings[i]] = {
         // value.count is number of occurrences
         count: 0,
         probability: 0,
         // value.phonemes is phoneme sequence
         phonemes: sequences[i],
         // actual probability / expected probability
-        actualExpectedRatio: -1
+        actual_expected_ratio: -1
       }
     }
   }
@@ -114,40 +116,54 @@ class Stats {
    * 
    * @param {string?} words Optional custom lexicon (word set).
    */
-  calculateFrequencies(words) {
-    let regexMatches
+  calculate_frequencies(words) {
+    let regex_matches
     // collect occurrences for each pattern instance
-    while (regexMatches = this.re.exec(words)) {
-      this.patternInstanceFrequencies[regexMatches[0]].count += 1
+    while (regex_matches = this.re.exec(words)) {
+      this.patt_inst_freqs[regex_matches[0]].count += 1
     }
 
+    let word_count = split_text_to_words(words).length
+
     // mean
-    let instances = Object.values(this.patternInstanceFrequencies)
+    let instances = Object.values(this.patt_inst_freqs)
     let n = instances.length
     let sum = 0
     for (let iStats of instances) {
       sum += iStats.count
     }
-    this.frequencyMean = sum / n
-    this.probabilityMean = this.frequencyMean / n
-    console.log(`debug frequency mean for pattern ${this.pattern} = ${this.frequencyMean} ([sum=${sum}] / [instances=${n}])`)
+    this.freq_mean = sum / n
+    this.prob_mean = this.freq_mean / word_count
+
+    // since a pattern can occur more than once in a word, raw probability mean above can be >1; force constraint
+    if (this.prob_mean > 1) this.prob_mean = 1
+
+    console.log(
+      `debug frequency mean for pattern ${this.pattern} = ${this.freq_mean} `
+      + `(probability=${this.prob_mean})`
+    )
 
     // standard deviation
-    let deviationSumSquaresF = 0, deviationSumSquaresP = 0
-    for (let iStats of instances) {
-      iStats.probability = iStats.count / n
+    let dev_sum_sq_freq = 0, dev_sum_sq_prob = 0
+    for (let inst_stats of instances) {
+      inst_stats.probability = inst_stats.count / word_count
+      // constrain raw probability to [0..1]
+      if (inst_stats.probability > 1) inst_stats.probability = 1
 
-      deviationSumSquaresF += ((iStats.count - this.frequencyMean) ** 2)
-      deviationSumSquaresP += ((iStats.probability - this.probabilityMean) ** 2)
+      dev_sum_sq_freq += ((inst_stats.count - this.freq_mean) ** 2)
+      dev_sum_sq_prob += ((inst_stats.probability - this.prob_mean) ** 2)
     }
 
-    this.frequencyDeviation = Math.sqrt(deviationSumSquaresF) / n
-    this.probabilityDeviation = Math.sqrt(deviationSumSquaresP) / n
-    console.log(`debug frequency standard deviation for pattern ${this.pattern} = +-${this.frequencyMean}`)
+    this.freq_dev = Math.sqrt(dev_sum_sq_freq) / n
+    this.prob_dev = Math.sqrt(dev_sum_sq_prob) / n
+    console.log(
+      `debug frequency standard deviation for pattern ${this.pattern} = ${this.freq_mean} `
+      + `(prob-std-dev=${this.freq_dev})`
+    )
 
     // actual / expected ratios
-    for (let iStats of instances) {
-      iStats.actualExpectedRatio = (iStats.probability) / this.probabilityMean
+    for (let inst_stats of instances) {
+      inst_stats.actual_expected_ratio = (inst_stats.probability) / this.prob_mean
     }
   }
 }
@@ -170,13 +186,13 @@ function FindHoles(pattern, words, categories) {
 
   for (let patternStat of [abc, ab, bc]) {
     console.log(`debug calculate frequencies for pattern ${patternStat.pattern}`)
-    patternStat.calculateFrequencies(words)
+    patternStat.calculate_frequencies(words)
   }
   
   let tOut = []
   
-  for (let sKey of Object.keys(abc.tOut)) { // for each ABC we tallied up the results for
-    let full = abc.patternInstanceFrequencies[sKey].phonemes
+  for (let sKey of Object.keys(abc.patt_inst_freqs)) { // for each ABC we tallied up the results for
+    let full = abc.patt_inst_freqs[sKey].phonemes
     let start = full.slice(0,2) // the corresponding AB
     let end = full.slice(1) // the corresponding BC
     let startStr = start.join('')
@@ -185,18 +201,30 @@ function FindHoles(pattern, words, categories) {
     console.log(
       `debug whole start end:`
       + `\t${sKey}\t${startStr}\t${endStr}\t|`
-      + `\t${abc.patternInstanceFrequencies[sKey].count}\t${ab.patternInstanceFrequencies[startStr].count}\t${bc.patternInstanceFrequencies[endStr].count}`
+      + `\t${abc.patt_inst_freqs[sKey].count}\t${ab.patt_inst_freqs[startStr].count}\t${bc.patt_inst_freqs[endStr].count}`
     )
     
     // if "AB" occurs, and "BC" occurs, but "ABC" doesn't
     // TODO redefine definition of hole as actual/expected probability ratio low outlier
-    if ( (ab.patternInstanceFrequencies[startStr].count >= 1) && (bc.patternInstanceFrequencies[endStr].count >= 1) && (abc.patternInstanceFrequencies[sKey].count < 1) ) {
+    if ( (ab.patt_inst_freqs[startStr].count >= 1) && (bc.patt_inst_freqs[endStr].count >= 1) && (abc.patt_inst_freqs[sKey].count < 1) ) {
       // I'm not really sure what a good metric would be for deciding if a combination "occurs" or not
       tOut.push(sKey)
     }
   }
   
   return tOut
+}
+
+/**
+ * Split text into words. 
+ * Assumes words are only delimited by spaces; punctuation not yet handled.
+ * 
+ * @param {string} text 
+ * @returns {string[][]}
+ */
+function split_text_to_words(text) {
+  let words = text.trim().split(WORD_DELIM)
+  return words
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -331,13 +359,13 @@ function split(inputString) {
 /**
  * Whether the given string contains any chars that are category codes.
  * 
- * @param {string} inputString A string expected to be a sequence of phoneme category codes.
+ * @param {string} in_string A string expected to be a sequence of phoneme category codes.
  * @param {string} categories Custom phoneme category codes.
  * @returns {boolean} Whether any phoneme categories are present in the string. If the string is empty, return `false`.
  */
-function stringHasCategories(inputString, categories) {
+function string_has_categories(in_string, categories) {
     for (const key of Object.keys(categories)) {
-        if (inputString.includes(key)) {
+        if (in_string.includes(key)) {
             return true
         }
     }
@@ -349,19 +377,19 @@ function stringHasCategories(inputString, categories) {
  * 
  * // TODO handle new return type everywhere
  * 
- * @param {string} inputString Sequence of phoneme category codes.
+ * @param {string} in_string Sequence of phoneme category codes.
  * @param {string} categories Custom phoneme category codes.
  * @returns {string[][]} List of possible phoneme sequences matching the given pattern of categories.
  */
-function expandCategories(inputString, categories) {
-    if (!stringHasCategories(inputString, categories)) {
+function expand_categories(in_string, categories) {
+    if (!string_has_categories(in_string, categories)) {
       // nest in list for consistency
-      return [inputString.split('')]
+      return [in_string.split('')]
     }
 
     let output = [[]]
 
-    for (let i = 0, ch = inputString.charAt(0); i < inputString.length; i++, ch = inputString.charAt(i)) {
+    for (let i = 0, ch = in_string.charAt(0); i < in_string.length; i++, ch = in_string.charAt(i)) {
         // input char is a category
         if (categories[ch] !== undefined) {
             output = multiply(output, categories[ch])
@@ -378,9 +406,10 @@ function expandCategories(inputString, categories) {
 
 // backend exports
 if (typeof exports != 'undefined') {
+  exports.split_text_to_words = split_text_to_words
   exports.Stats = Stats
   exports.FindHoles = FindHoles
   exports.multiply = multiply
-  exports.stringHasCategories = stringHasCategories
-  exports.expandCategories = expandCategories
+  exports.stringHasCategories = string_has_categories
+  exports.expandCategories = expand_categories
 }
