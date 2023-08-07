@@ -25,93 +25,158 @@ function sort_object(obj) {
 
 /**
  * Find matches of a given pattern within a text (set of words).
- * 
- * @param {string} sPattern String sequence of category codes.
- * @param {string?} words Optional custom lexicon (word set).
- * @param {Object?} categories Optional custom set of categories.
- * 
- * @returns {Object} 
  */
 class Stats {
-  constructor(sPattern, words, categories) {
-    // declare instance vars
-    
+  /**
+   * Constructor.
+   * 
+   * @param {string} sPattern String sequence of category codes.
+   * @param {Object?} categories Optional custom set of categories.
+   */
+  constructor(sPattern, categories) {
     /**
-     * The number of matches in the text for each instance of sPattern.
-     * @type {Object.<string, {count: number, phonemes: string[][]}>}
+     * Sequence of phoneme category codes.
      */
-    this.tOut = {}
+    this.pattern = sPattern
+    /**
+     * The number of matches in the text for each instance of the pattern.
+     * // TODO replace with `Map`
+     * 
+     * @type {Object.<string, {
+     *  count: number, 
+     *  probability: number,
+     *  phonemes: string[][], 
+     *  actualExpectedRatio: number
+     * }>}
+     */
+    this.patternInstanceFrequencies = {}
+    /**
+     * Mean frequency across all instances of the pattern.
+     * @type {number}
+     */
+    this.frequencyMean = -1
+    /**
+     * Mean probability.
+     * @type {number}
+     */
+    this.probabilityMean = -1
+    /**
+     * Standard deviation of frequency across all instances of the pattern.
+     * @type {number}
+     */
+    this.frequencyDeviation = -1
+    /**
+     * Probability standard deviation.
+     * @type {number}
+     */
+    this.probabilityDeviation = -1
     
     // calculate stats
     
     // get all phoneme sequences that fit the pattern (pattern instances)
-    let tCombos = expandCategories(sPattern, categories)
+    let sequences = expandCategories(this.pattern, categories)
 
-    let tComboStrings = []
-    tCombos.forEach((phonemes) => {
-      tComboStrings.push(phonemes.join(''))
+    let strings = []
+    sequences.forEach((phonemes) => {
+      strings.push(phonemes.join(''))
     })
-    
-    for (let i = 0; i < tCombos.length; i++) {
-      this.tOut[tComboStrings[i]] = {
-        // value.count is number of occurrences
-        count: 0,
-        // value.phonemes is phoneme sequence
-        phonemes: tCombos[i]
-      }
-    }
 
     // sort the combinations by descending length*, then smoosh into a regex
     // (* since some of the consonants are digraphs, e.g. "gh", and regexes match the first thing they can,
     //    if we don't force it to try to match longer combinations first, it would never match e.g. "agh" -
     //    that would always be counted as a match for "ag".)
-    let re = new RegExp(
-      tComboStrings.sort(function(a,b) { 
+    /**
+     * Regular expression to find all occurrences of each pattern instance in any text string.
+     * @type {RegExp}
+     */
+    this.re = new RegExp(
+      strings.sort(function(a,b) { 
         return b.length - a.length 
       }).join('|'), 
       'g'
     )
-    let result
-  
-    // collect occurrences for each pattern instance
-    while (result = re.exec(words)) {
-      this.tOut[result[0]].count += 1
+    
+    for (let i = 0; i < sequences.length; i++) {
+      this.patternInstanceFrequencies[strings[i]] = {
+        // value.count is number of occurrences
+        count: 0,
+        probability: 0,
+        // value.phonemes is phoneme sequence
+        phonemes: sequences[i],
+        // actual probability / expected probability
+        actualExpectedRatio: -1
+      }
     }
   }
-}
 
-/**
- * Same as {@link Stats}, but with result keys reverse sorted.
- * @param {string} sPattern 
- * @param {string?} words
- * @param {Object?} categories
- */
-function OStats(sPattern, words, categories) {
-  let tOStats = sort_object(Stats(sPattern, words, categories))
-  let str = '{\n' + Object.getOwnPropertyNames(tOStats).map(key => `  ${key}: ${tOStats[key]}`).join('\n') + '\n}'
-  console.log(str)
+  /**
+   * Calculate occurrences/frequency of each instance of the given pattern in the `words` text.
+   * 
+   * @param {string?} words Optional custom lexicon (word set).
+   */
+  calculateFrequencies(words) {
+    let regexMatches
+    // collect occurrences for each pattern instance
+    while (regexMatches = this.re.exec(words)) {
+      this.patternInstanceFrequencies[regexMatches[0]].count += 1
+    }
+
+    // mean
+    let instances = Object.values(this.patternInstanceFrequencies)
+    let n = instances.length
+    let sum = 0
+    for (let iStats of instances) {
+      sum += iStats.count
+    }
+    this.frequencyMean = sum / n
+    this.probabilityMean = this.frequencyMean / n
+    console.log(`debug frequency mean for pattern ${this.pattern} = ${this.frequencyMean} ([sum=${sum}] / [instances=${n}])`)
+
+    // standard deviation
+    let deviationSumSquaresF = 0, deviationSumSquaresP = 0
+    for (let iStats of instances) {
+      iStats.probability = iStats.count / n
+
+      deviationSumSquaresF += ((iStats.count - this.frequencyMean) ** 2)
+      deviationSumSquaresP += ((iStats.probability - this.probabilityMean) ** 2)
+    }
+
+    this.frequencyDeviation = Math.sqrt(deviationSumSquaresF) / n
+    this.probabilityDeviation = Math.sqrt(deviationSumSquaresP) / n
+    console.log(`debug frequency standard deviation for pattern ${this.pattern} = +-${this.frequencyMean}`)
+
+    // actual / expected ratios
+    for (let iStats of instances) {
+      iStats.actualExpectedRatio = (iStats.probability) / this.probabilityMean
+    }
+  }
 }
 
 /**
  * Given some pattern ABC, find combinations of ABC that don't appear in the lexicon, even though AB and BC 
  * individually do.
  * 
- * @param {string} sPattern 
- * @param {string} words 
- * @param {Object} categories 
+ * @param {string} pattern 
+ * @param {string} words Text of words to analyze.
+ * @param {Object} categories Custom phoneme category definitions.
  * 
  * @returns {string[]} List of strings of the given pattern that have unusually low occurrence given the 
  * occurrences of its substrings.
  */
-function FindHoles(sPattern, words, categories) {
-  let tPattern = Stats(sPattern, words, categories) // results for search on "ABC"
-  let tTop = Stats(sPattern.substring(0,2), words, categories) // results for search on "AB"
-  let tBottom = Stats(sPattern.substring(1), words, categories) // results for search on "BC"
+function FindHoles(pattern, words, categories) {
+  let abc = new Stats(pattern, categories) // results for search on "ABC"
+  let ab = new Stats(pattern.substring(0,2), categories) // results for search on "AB"
+  let bc = new Stats(pattern.substring(1), categories) // results for search on "BC"
+
+  for (let patternStat of [abc, ab, bc]) {
+    console.log(`debug calculate frequencies for pattern ${patternStat.pattern}`)
+    patternStat.calculateFrequencies(words)
+  }
   
   let tOut = []
   
-  for (let sKey of Object.keys(tPattern.tOut)) { // for each ABC we tallied up the results for
-    let full = tPattern.tOut[sKey].phonemes
+  for (let sKey of Object.keys(abc.tOut)) { // for each ABC we tallied up the results for
+    let full = abc.patternInstanceFrequencies[sKey].phonemes
     let start = full.slice(0,2) // the corresponding AB
     let end = full.slice(1) // the corresponding BC
     let startStr = start.join('')
@@ -120,11 +185,12 @@ function FindHoles(sPattern, words, categories) {
     console.log(
       `debug whole start end:`
       + `\t${sKey}\t${startStr}\t${endStr}\t|`
-      + `\t${tPattern[sKey].count}\t${tTop.tOut[startStr].count}\t${tBottom.tOut[endStr].count}`
+      + `\t${abc.patternInstanceFrequencies[sKey].count}\t${ab.patternInstanceFrequencies[startStr].count}\t${bc.patternInstanceFrequencies[endStr].count}`
     )
     
     // if "AB" occurs, and "BC" occurs, but "ABC" doesn't
-    if ( (tTop.tOut[startStr].count >= 1) && (tBottom.tOut[endStr].count >= 1) && (tPattern.tOut[sKey].count < 1) ) {
+    // TODO redefine definition of hole as actual/expected probability ratio low outlier
+    if ( (ab.patternInstanceFrequencies[startStr].count >= 1) && (bc.patternInstanceFrequencies[endStr].count >= 1) && (abc.patternInstanceFrequencies[sKey].count < 1) ) {
       // I'm not really sure what a good metric would be for deciding if a combination "occurs" or not
       tOut.push(sKey)
     }
