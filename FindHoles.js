@@ -30,46 +30,54 @@ function sort_object(obj) {
  * @param {string?} words Optional custom lexicon (word set).
  * @param {Object?} categories Optional custom set of categories.
  * 
- * @returns {Object} The number of matches in the lexicon of each segment that matches sPattern.
+ * @returns {Object} 
  */
-function Stats(sPattern, words, categories) {
-  // get all combinations that fit the pattern
-  let tCombos = expandCategories(sPattern, categories)
-
-  let tComboStrings = []
-  tCombos.forEach((phonemes) => {
-    tComboStrings.push(phonemes.join(''))
-  })
-
-  let tOut = {}
-  for (let i = 0; i < tCombos.length; i++) {
+class Stats {
+  constructor(sPattern, words, categories) {
+    // declare instance vars
+    
     /**
+     * The number of matches in the text for each instance of sPattern.
      * @type {Object.<string, {count: number, phonemes: string[][]}>}
      */
-    tOut[tComboStrings[i]] = {
-      // value.count is number of occurrences
-      count: 0,
-      // value.phonemes is phoneme sequence
-      phonemes: tCombos[i]
+    this.tOut = {}
+    
+    // calculate stats
+    
+    // get all phoneme sequences that fit the pattern (pattern instances)
+    let tCombos = expandCategories(sPattern, categories)
+
+    let tComboStrings = []
+    tCombos.forEach((phonemes) => {
+      tComboStrings.push(phonemes.join(''))
+    })
+    
+    for (let i = 0; i < tCombos.length; i++) {
+      this.tOut[tComboStrings[i]] = {
+        // value.count is number of occurrences
+        count: 0,
+        // value.phonemes is phoneme sequence
+        phonemes: tCombos[i]
+      }
+    }
+
+    // sort the combinations by descending length*, then smoosh into a regex
+    // (* since some of the consonants are digraphs, e.g. "gh", and regexes match the first thing they can,
+    //    if we don't force it to try to match longer combinations first, it would never match e.g. "agh" -
+    //    that would always be counted as a match for "ag".)
+    let re = new RegExp(
+      tComboStrings.sort(function(a,b) { 
+        return b.length - a.length 
+      }).join('|'), 
+      'g'
+    )
+    let result
+  
+    // collect occurrences for each pattern instance
+    while (result = re.exec(words)) {
+      this.tOut[result[0]].count += 1
     }
   }
-
-  // sort the combinations by descending length*, then smoosh into a regex
-  // (* since some of the consonants are digraphs, e.g. "gh", and regexes match the first thing they can,
-  //    if we don't force it to try to match longer combinations first, it would never match e.g. "agh" -
-  //    that would always be counted as a match for "ag".)
-  let re = new RegExp(
-    tComboStrings.sort(function(a,b) { 
-      return b.length - a.length 
-    }).join('|'), 
-    'g'
-  )
-  let result
-
-  while (result = re.exec(words)) {
-    tOut[result[0]].count += 1
-  }
-  return tOut
 }
 
 /**
@@ -85,13 +93,15 @@ function OStats(sPattern, words, categories) {
 }
 
 /**
- * Given some pattern ABC, find combinations of ABC that don't appear in the lexicon, even though AB and BC individually do.
+ * Given some pattern ABC, find combinations of ABC that don't appear in the lexicon, even though AB and BC 
+ * individually do.
  * 
  * @param {string} sPattern 
  * @param {string} words 
  * @param {Object} categories 
  * 
- * @returns {string[]} List of strings of the given pattern that have unusually low occurrence given the ocurrences of its substrings.
+ * @returns {string[]} List of strings of the given pattern that have unusually low occurrence given the 
+ * occurrences of its substrings.
  */
 function FindHoles(sPattern, words, categories) {
   let tPattern = Stats(sPattern, words, categories) // results for search on "ABC"
@@ -100,8 +110,8 @@ function FindHoles(sPattern, words, categories) {
   
   let tOut = []
   
-  for (let sKey in tPattern) { // for each ABC we tallied up the results for
-    let full = tPattern[sKey].phonemes
+  for (let sKey of Object.keys(tPattern.tOut)) { // for each ABC we tallied up the results for
+    let full = tPattern.tOut[sKey].phonemes
     let start = full.slice(0,2) // the corresponding AB
     let end = full.slice(1) // the corresponding BC
     let startStr = start.join('')
@@ -110,11 +120,11 @@ function FindHoles(sPattern, words, categories) {
     console.log(
       `debug whole start end:`
       + `\t${sKey}\t${startStr}\t${endStr}\t|`
-      + `\t${tPattern[sKey].count}\t${tTop[startStr].count}\t${tBottom[endStr].count}`
+      + `\t${tPattern[sKey].count}\t${tTop.tOut[startStr].count}\t${tBottom.tOut[endStr].count}`
     )
     
     // if "AB" occurs, and "BC" occurs, but "ABC" doesn't
-    if ( (tTop[startStr].count >= 1) && (tBottom[endStr].count >= 1) && (tPattern[sKey].count < 1) ) {
+    if ( (tTop.tOut[startStr].count >= 1) && (tBottom.tOut[endStr].count >= 1) && (tPattern.tOut[sKey].count < 1) ) {
       // I'm not really sure what a good metric would be for deciding if a combination "occurs" or not
       tOut.push(sKey)
     }
